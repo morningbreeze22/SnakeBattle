@@ -100,7 +100,7 @@ export class GameMap extends GameObject{
                 if(g[r][c]!=0){
                     // draw walls, notice that this new is after gamemap, 
                     // so it will overwrite original color
-                    new Wall(r,c,this);
+                    this.walls.push(new Wall(r,c,this));
                 }
             }
         }
@@ -151,6 +151,31 @@ export class GameMap extends GameObject{
         for(const snake of this.snakes){
             snake.next_step();
         }
+    }
+
+    // check collision
+    check_valid(cell){
+        
+        for(const wall of this.walls){
+            if(wall.r===cell.r && wall.c === cell.c){
+                return false;
+            }
+        }
+
+        for(const snake of this.snakes){
+            let k = snake.cells.length;
+            if(!snake.check_tail_increase()){
+                k--;
+            }
+            for(let i=0;i<k;i++){
+                const s = snake.cells[i];
+                if(s.r===cell.r && s.c===cell.c){
+                    return false;
+                }
+            }
+        }
+        return true;
+
     }
 
     update(){
