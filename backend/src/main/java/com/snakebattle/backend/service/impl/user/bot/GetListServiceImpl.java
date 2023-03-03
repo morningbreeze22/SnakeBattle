@@ -1,4 +1,4 @@
-package com.snakebattle.backend.service.impl.user.account;
+package com.snakebattle.backend.service.impl.user.bot;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.snakebattle.backend.mapper.BotMapper;
