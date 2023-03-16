@@ -5,10 +5,11 @@ import { Wall } from "./Wall";
 export class GameMap extends GameObject{
 
     // ctx: 2d ctx of canvas, parent: parent object
-    constructor(ctx, parent){
+    constructor(ctx, parent, store){
         super();
         this.ctx = ctx;
         this.parent = parent;
+        this.store = store;
         this.L = 0;
 
         this.rows = 13;
@@ -32,7 +33,7 @@ export class GameMap extends GameObject{
             this)
         ]
     }
-
+/* create map at frontend 
     checkconectivity(g, sx, sy, tx, ty){
         if(sx==tx && sy==ty) return true;
         g[sx][sy] = true;
@@ -106,12 +107,28 @@ export class GameMap extends GameObject{
         }
         return true;
     }
+*/
 
+create_walls(){
+    const g = this.store.state.pk.gamemap;
+
+    for(let r = 0;r<this.rows;r++){
+        for(let c=0;c<this.cols;c++){
+            if(g[r][c]!=0){
+                // draw walls, notice that this new is after gamemap, 
+                // so it will overwrite original color
+                this.walls.push(new Wall(r,c,this));
+            }
+        }
+    }
+    return true;
+}
     add_listening_events(){
         this.ctx.canvas.focus();
 
-        const [snake0,snake1] = this.snakes;
+        //const [snake0,snake1] = this.snakes;
         this.ctx.canvas.addEventListener("keydown",e=>{
+            /* used to test at frontend
             if(e.key === 'w') snake0.set_direction(0);
             else if(e.key==='d') snake0.set_direction(1);
             else if(e.key==='s') snake0.set_direction(2);
@@ -120,6 +137,20 @@ export class GameMap extends GameObject{
             else if(e.key==="ArrowRight") snake1.set_direction(1);
             else if(e.key==="ArrowDown") snake1.set_direction(2);
             else if(e.key==="ArrowLeft") snake1.set_direction(3);
+            */
+
+            let d = -1;
+            if(e.key === 'w') d=0;
+            else if(e.key==='d') d=1;
+            else if(e.key==='s') d=2;
+            else if(e.key==='a') d=3;
+
+            if(d>=0){
+                this.store.state.pk.socket.send(JSON.stringify({
+                    "event":"move",
+                    "direction":d
+                }));
+            }
         });
     }
 
@@ -153,7 +184,7 @@ export class GameMap extends GameObject{
         }
     }
 
-    // check collision
+    // check collision at frontend
     check_valid(cell){
         
         for(const wall of this.walls){

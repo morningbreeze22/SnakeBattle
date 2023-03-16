@@ -79,10 +79,12 @@ export class Snake extends GameObject{
             this.cells[i] = JSON.parse(JSON.stringify(this.cells[i-1]));
         }
 
+        // used to debug at frontend
+        /* 
         if(!this.gamemap.check_valid(this.next_cell)){
             this.status = "die";
         }
-
+        */
     }
 
     update_move(){
