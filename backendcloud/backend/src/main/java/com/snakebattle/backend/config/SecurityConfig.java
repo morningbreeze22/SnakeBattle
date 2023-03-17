@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .antMatchers("/user/account/token/", "/user/account/register/").permitAll()
-                .antMatchers("/pk/start/game/").access(hasIpAddress("127.0.0.1"))
+                .antMatchers("/pk/start/game/","/pk/receive/bot/move/").access(hasIpAddress("127.0.0.1"))
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .anyRequest().authenticated();
 

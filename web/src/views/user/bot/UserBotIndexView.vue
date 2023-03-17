@@ -42,7 +42,7 @@
                                     <label for="code" class="form-label">Code:</label>
                                     <VAceEditor
                                         v-model:value="botadd.content"
-                                        lang="c_cpp"
+                                        lang="java"
                                         theme="textmate"
                                         style="height: 300px"
                                         :options="{
@@ -116,7 +116,7 @@
                                                     <label for="code" class="form-label">Code:</label>
                                                     <VAceEditor
                                                         v-model:value="bot.content"
-                                                        lang="c_cpp"
+                                                        lang="java"
                                                         theme="textmate"
                                                         style="height: 300px"
                                                         :options="{
@@ -163,8 +163,13 @@ import { useStore } from "vuex";
 import { Modal } from "bootstrap/dist/js/bootstrap";
 import { VAceEditor } from 'vue3-ace-editor';
 import ace from 'ace-builds';
+
 import 'ace-builds/src-noconflict/ext-language_tools';
-import 'ace-builds/src-noconflict/mode-c_cpp.js';
+import 'ace-builds/src-noconflict/mode-java.js';
+//import 'ace-builds/src-noconflict/mode-c_cpp.js';
+
+
+
 
 export default{
     components:{
@@ -188,6 +193,8 @@ export default{
         "https://cdn.jsdelivr.net/npm/ace-builds@" +
             require("ace-builds").version +
             "/src-noconflict/");
+   
+
 
         // refresh page and fetch all bots from backend
         const refresh_bots = ()=>{

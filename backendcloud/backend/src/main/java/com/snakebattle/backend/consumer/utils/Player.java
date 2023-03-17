@@ -12,6 +12,10 @@ import java.util.List;
 @NoArgsConstructor
 public class Player {
     private Integer id;
+
+    private Integer botId; // if -1, no code
+
+    private String botCode;
     private Integer sx;  // row
     private Integer sy;  // col
     private List<Integer> steps;

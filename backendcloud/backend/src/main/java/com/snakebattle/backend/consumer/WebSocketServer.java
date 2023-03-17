@@ -2,8 +2,10 @@ package com.snakebattle.backend.consumer;
 import com.alibaba.fastjson2.JSONObject;
 import com.snakebattle.backend.consumer.utils.Game;
 import com.snakebattle.backend.consumer.utils.JwtAuthentication;
+import com.snakebattle.backend.mapper.BotMapper;
 import com.snakebattle.backend.mapper.RecordMapper;
 import com.snakebattle.backend.mapper.UserMapper;
+import com.snakebattle.backend.pojo.Bot;
 import com.snakebattle.backend.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,7 +25,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @ServerEndpoint("/websocket/{token}")  // not end with /
 public class WebSocketServer {
 
-    // used to map user id into websocketserver instance
+    // used to map user id into websocket server instance
     final public static ConcurrentHashMap<Integer,WebSocketServer> users = new ConcurrentHashMap<>();
     // users ready to match, move to matching system
     //final private static CopyOnWriteArraySet<User> matchpool = new CopyOnWriteArraySet<>();
@@ -33,9 +35,11 @@ public class WebSocketServer {
     private static UserMapper userMapper;
     public static RecordMapper recordMapper;
 
+    private static BotMapper botMapper;
+
     public static RestTemplate restTemplate;
 
-    private Game game = null;
+    public Game game = null;
 
     private final static String addPlayerUrl = "http://127.0.0.1:3001/player/add/";
     private final static String removePlayerUrl = "http://127.0.0.1:3001/player/remove/";
@@ -52,6 +56,11 @@ public class WebSocketServer {
     @Autowired
     public void setRestTemplate(RestTemplate restTemplate){
         WebSocketServer.restTemplate = restTemplate;
+    }
+
+    @Autowired
+    public void setBotMapper(BotMapper botMapper){
+        WebSocketServer.botMapper = botMapper;
     }
 
     @OnOpen
@@ -79,11 +88,14 @@ public class WebSocketServer {
         }
     }
 
-    public static void startGame(Integer aId, Integer bId){
+    public static void startGame(Integer aId, Integer aBotId, Integer bId, Integer bBotId){
         User a = userMapper.selectById(aId);
         User b = userMapper.selectById(bId);
+        Bot botA = botMapper.selectById(aBotId);
+        Bot botB = botMapper.selectById(bBotId);
 
-        Game game = new Game(13,14,20, a.getId(),b.getId());
+
+        Game game = new Game(13,14,20, a.getId(), botA, b.getId(), botB);
         game.createMap();
 
         // start a thread
@@ -120,10 +132,12 @@ public class WebSocketServer {
         if(users.get(b.getId())!=null) users.get(b.getId()).sendMessage(respB.toJSONString());
     }
 
-    private void startMatching(){
+    private void startMatching(Integer botId){
         MultiValueMap<String,String> data = new LinkedMultiValueMap<>();
         data.add("user_id",this.user.getId().toString());
         data.add("rating",this.user.getRating().toString());
+        data.add("bot_id", botId.toString());
+
         restTemplate.postForObject(addPlayerUrl, data, String.class);
     }
 
@@ -136,12 +150,14 @@ public class WebSocketServer {
 
     private void move(int direction){
         if(game.getPlayerA().getId().equals(user.getId())){
-            System.out.println("move");
-            System.out.println(user.getId());
-            System.out.println(direction);
-            game.setNextStepA(direction);
+            if(game.getPlayerA().getBotId().equals(-1)){
+                game.setNextStepA(direction); // move according to user input
+            }
+
         } else if(game.getPlayerB().getId().equals(user.getId())){
-            game.setNextStepB(direction);
+            if(game.getPlayerB().getBotId().equals(-1)) {
+                game.setNextStepB(direction);
+            }
         } else{
             System.out.println("cannot move");
         }
@@ -154,7 +170,7 @@ public class WebSocketServer {
         JSONObject data = JSONObject.parseObject(message);
         String event = data.getString("event");
         if("start-matching".equals(event)){
-            startMatching();
+            startMatching(data.getInteger("bot_id"));
         } else if ("stop-matching".equals(event)){
             stopMatching();
         } else if ("move".equals(event)){

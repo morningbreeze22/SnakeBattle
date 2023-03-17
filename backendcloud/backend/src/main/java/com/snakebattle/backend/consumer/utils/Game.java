@@ -2,7 +2,10 @@ package com.snakebattle.backend.consumer.utils;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.snakebattle.backend.consumer.WebSocketServer;
+import com.snakebattle.backend.pojo.Bot;
 import com.snakebattle.backend.pojo.Record;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,13 +32,30 @@ public class Game extends Thread{
     private String status = "playing";
     private String loser = ""; // all/A/B
 
-    public Game(Integer rows, Integer cols, Integer inner_walls_count, Integer idA, Integer idB) {
+    private final static String addBotUrl = "http://127.0.0.1:3002/bot/add/";
+
+    public Game(Integer rows, Integer cols, Integer inner_walls_count, Integer idA, Bot botA, Integer idB, Bot botB) {
         this.rows = rows;
         this.cols = cols;
         this.inner_walls_count = inner_walls_count;
         this.g = new int[rows][cols];
-        playerA = new Player(idA, rows-2, 1, new ArrayList<>());
-        playerB = new Player(idB, 1, cols-2, new ArrayList<>());
+
+        Integer aBotId = -1;
+        Integer bBotId = -1;
+        String aBotCode ="";
+        String bBotCode="";
+        if(botA!=null){
+            aBotId = botA.getId();
+            aBotCode = botA.getContent();
+        }
+        if(botB!=null){
+            bBotId = botB.getId();
+            bBotCode = botB.getContent();
+        }
+
+
+        playerA = new Player(idA, aBotId, aBotCode, rows-2, 1, new ArrayList<>());
+        playerB = new Player(idB, bBotId, bBotCode, 1, cols-2, new ArrayList<>());
     }
 
     public Player getPlayerA(){
@@ -130,6 +150,36 @@ public class Game extends Thread{
         }
     }
 
+    private String getInput(Player player){
+        // encode game info as string
+        // format: assume a is player, b is opponent
+        // gamemap#a.sx#a.sy#(a.steps)#b.sx#b.sy#(b.steps)
+
+        Player myself, opponent;
+
+        if(playerA.getId().equals(player.getId())){
+            myself = playerA;
+            opponent = playerB;
+        } else{
+            myself = playerB;
+            opponent = playerA;
+        }
+
+        return getMapString() + "#" + myself.getSx() + "#" + myself.getSy() + "#(" + myself.getStepsString() + ")#" +
+                opponent.getSx() + "#" + opponent.getSy() + "#(" + opponent.getStepsString() + ")";
+
+
+    }
+
+    private void sendBotCode(Player player){
+        if(player.getBotId().equals(-1)) return;    // do not neet to execute code
+        MultiValueMap<String,String> data = new LinkedMultiValueMap<>();
+        data.add("user_id", player.getId().toString());
+        data.add("bot_code", player.getBotCode());
+        data.add("input", getInput(player));
+        WebSocketServer.restTemplate.postForObject(addBotUrl, data, String.class);
+    }
+
     // wait for next step
     private boolean nextStep(){
         try {
@@ -138,9 +188,12 @@ public class Game extends Thread{
             throw new RuntimeException(e);
         }
 
+        sendBotCode(playerA);
+        sendBotCode(playerB);
+
         for(int i=0;i<50;i++) {
             try {
-                Thread.sleep(200);
+                Thread.sleep(100);
 
                 // lock
                 lock.lock();
