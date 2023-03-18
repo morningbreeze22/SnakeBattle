@@ -27,6 +27,7 @@ public class WebSocketServer {
 
     // used to map user id into websocket server instance
     final public static ConcurrentHashMap<Integer,WebSocketServer> users = new ConcurrentHashMap<>();
+
     // users ready to match, move to matching system
     //final private static CopyOnWriteArraySet<User> matchpool = new CopyOnWriteArraySet<>();
     private Session session = null;
@@ -103,6 +104,7 @@ public class WebSocketServer {
 
         if(users.get(a.getId())!=null) users.get(a.getId()).game = game;
         if(users.get(b.getId())!=null)  users.get(b.getId()).game = game;
+
 
         JSONObject respGame = new JSONObject();
         respGame.put("a_id", game.getPlayerA().getId());

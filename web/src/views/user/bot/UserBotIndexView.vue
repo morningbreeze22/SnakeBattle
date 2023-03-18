@@ -35,7 +35,7 @@
 
                                     <div class="mb-3">
                                     <label for="description" class="form-label">Description:</label>
-                                    <textarea  v-model="botadd.description" id="description" rows="3" class="form-control" />
+                                    <textarea  v-model="botadd.description" id="description" rows="6" class="form-control" />
                                     </div>
 
                                     <div class="mb-3">
@@ -54,7 +54,7 @@
                                         showPrintMargin: false, 
                                         highlightActiveLine: true,
                                         }"
-                                    />
+                                    >abcd</VAceEditor>
 
                                     </div>
                                     
@@ -183,8 +183,94 @@ export default{
 
         const botadd = reactive({
             title:"",
-            description:"",
-            content:"",
+            description:`Welcome to snake battle!You can create a new snake bot by modifying code below. Here are some details that you need to know.
+Now we only support Java code. You only need to change code in nextMove() function. DO NOT change class name and package name.
+Input of this function is a string contains all the information about this game, assume you are player a and your opponent is b, format of this string is:
+
+gamemap#a.sx#a.sy#(a.steps)#b.sx#b.sy#(b.steps)
+
+gamemap is a 13*14 0-1 string, 1 means wall.
+sx and sy are x and y index of start points.
+steps surrounded by round brackets are previous steps of each player, they are string consist of number 0,1,2,3, which means up,right,down,left. 
+
+Output of this function is also an integer that decides which direction your snake will go to , it should belong to {0,1,2,3}, which means up,right,down,left respectively.
+
+We already provide some code to parse the input, so the easiest way to modify it is to change code between line 61-70.
+
+Good luck!`,
+            content:`package com.snakebattle.botrunningsystem.utils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface {
+    static class Cell {
+        public int x, y;
+        public Cell(int x, int y) {  // define a cell with index
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    private boolean check_tail_increasing(int step) { // rules for when the snake will become longer
+        if (step <= 10) return true;
+        return step % 3 == 1;
+    }
+
+    public List<Cell> getCells(int sx, int sy, String steps) { // compute snake cells
+        steps = steps.substring(1, steps.length() - 1); // get rid of brackets
+        List<Cell> res = new ArrayList<>();
+
+        int[] dx = {-1, 0, 1, 0}, dy = {0, 1, 0, -1};
+        int x = sx, y = sy;
+        int step = 0;
+        res.add(new Cell(x, y));
+        for (int i = 0; i < steps.length(); i ++ ) {
+            int d = steps.charAt(i) - '0';
+            x += dx[d];
+            y += dy[d];
+            res.add(new Cell(x, y));
+            if (!check_tail_increasing( ++ step)) {
+                res.remove(0);
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public Integer nextMove(String input) {   
+        String[] strs = input.split("#");
+        int[][] g = new int[13][14];
+        for (int i = 0, k = 0; i < 13; i ++ ) {
+            for (int j = 0; j < 14; j ++, k ++ ) {
+                if (strs[0].charAt(k) == '1') {
+                    g[i][j] = 1;    // g is gamemap, 1 means wall
+                }
+            }
+        }
+        // get start points
+        int aSx = Integer.parseInt(strs[1]), aSy = Integer.parseInt(strs[2]);
+        int bSx = Integer.parseInt(strs[4]), bSy = Integer.parseInt(strs[5]);
+        // compute cells
+        List<Cell> aCells = getCells(aSx, aSy, strs[3]);
+        List<Cell> bCells = getCells(bSx, bSy, strs[6]);
+        
+        for (Cell c: aCells) g[c.x][c.y] = 1;
+        for (Cell c: bCells) g[c.x][c.y] = 1;
+        // replace below code with your own algorithm!
+        int[] dx = {-1, 0, 1, 0}, dy = {0, 1, 0, -1};
+        for (int i = 0; i < 4; i ++ ) {
+            int x = aCells.get(aCells.size() - 1).x + dx[i];
+            int y = aCells.get(aCells.size() - 1).y + dy[i];
+            if (x >= 0 && x < 13 && y >= 0 && y < 14 && g[x][y] == 0) {
+                return i;
+            }
+        }
+
+        return 0;
+    }
+}
+`,
             error_message:""
         });
 

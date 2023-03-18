@@ -61,9 +61,18 @@ public class MatchingPool extends Thread{
         boolean[] used = new boolean[players.size()];
         for(int i=0;i<players.size();i++){
             if(used[i]) continue;
+            Player a = players.get(i);
+            // if a user already waiting for too long and no other user is matching
+            // we match this user with a bot
+            if(a.getWaitingTime()>10 && players.size()==1){
+                System.out.println("add ai bot");
+                used[i]=true;
+                sendAiResult(a);
+            }
+
             for(int j=i+1;j<players.size();j++){
                 if(used[j]) continue;
-                Player a = players.get(i);
+
                 Player b = players.get(j);
 
                 // if in anycase one user is duplicated in pool
@@ -78,6 +87,8 @@ public class MatchingPool extends Thread{
                     sendResult(a,b);
                     break;
                 }
+
+
             }
         }
         // delete matched players
@@ -105,6 +116,15 @@ public class MatchingPool extends Thread{
 
         data.add("a_bot_id",a.getBotId().toString());
         data.add("b_bot_id",b.getBotId().toString());
+        restTemplate.postForObject(startGameUrl, data, String.class);
+    }
+
+    private void sendAiResult(Player a){
+        MultiValueMap<String,String> data = new LinkedMultiValueMap<>();
+        data.add("a_id",a.getUserId().toString());
+        data.add("b_id","6");
+        data.add("a_bot_id",a.getBotId().toString());
+        data.add("b_bot_id","12");
         restTemplate.postForObject(startGameUrl, data, String.class);
     }
 

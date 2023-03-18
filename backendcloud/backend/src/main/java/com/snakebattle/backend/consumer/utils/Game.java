@@ -171,12 +171,13 @@ public class Game extends Thread{
 
     }
 
-    private void sendBotCode(Player player){
+    private void sendBotCode(Player player, Player opponent){
         if(player.getBotId().equals(-1)) return;    // do not neet to execute code
         MultiValueMap<String,String> data = new LinkedMultiValueMap<>();
         data.add("user_id", player.getId().toString());
         data.add("bot_code", player.getBotCode());
         data.add("input", getInput(player));
+        data.add("opponent_id",opponent.getId().toString());
         WebSocketServer.restTemplate.postForObject(addBotUrl, data, String.class);
     }
 
@@ -188,8 +189,8 @@ public class Game extends Thread{
             throw new RuntimeException(e);
         }
 
-        sendBotCode(playerA);
-        sendBotCode(playerB);
+        sendBotCode(playerA, playerB);
+        sendBotCode(playerB, playerA);
 
         for(int i=0;i<50;i++) {
             try {

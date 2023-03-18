@@ -12,6 +12,5 @@ public class Bot {
     Integer userId;
     String botCode;
     String input;
-
-
+    Integer opponentId;
 }
