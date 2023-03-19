@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.snakebattle.backend.consumer.WebSocketServer;
 import com.snakebattle.backend.pojo.Bot;
 import com.snakebattle.backend.pojo.Record;
+import com.snakebattle.backend.pojo.User;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -302,6 +303,23 @@ public class Game extends Thread{
 
     // save data to record table
     private void saveToDatabase(){
+
+        Integer ratingA = WebSocketServer.userMapper.selectById(playerA.getId()).getRating();
+        Integer ratingB = WebSocketServer.userMapper.selectById(playerB.getId()).getRating();
+
+        if("A".equals(loser)){
+            ratingA -= 3;
+            ratingB += 5;
+        } else if("B".equals(loser)){
+            ratingA += 5;
+            ratingB -= 3;
+        }
+
+        updateUserRating(playerA, ratingA);
+        updateUserRating(playerB, ratingB);
+
+
+
         Record record = new Record(
                 null,
                 playerA.getId(),
@@ -319,6 +337,12 @@ public class Game extends Thread{
 
         WebSocketServer.recordMapper.insert(record);
 
+    }
+
+    private void updateUserRating(Player player, Integer rating){
+        User user = WebSocketServer.userMapper.selectById(player.getId());
+        user.setRating(rating);
+        WebSocketServer.userMapper.updateById(user);
     }
 
     @Override

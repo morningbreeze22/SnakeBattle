@@ -1,5 +1,6 @@
 package com.snakebattle.backend.service.impl.user.bot;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.snakebattle.backend.mapper.BotMapper;
 import com.snakebattle.backend.pojo.Bot;
 import com.snakebattle.backend.pojo.User;
@@ -54,6 +55,13 @@ public class AddServiceImpl implements AddService {
 
         if(content.length()>10000){
             map.put("error_message","max length of code is 10000");
+            return map;
+        }
+
+        QueryWrapper<Bot> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id",user.getId());
+        if(botMapper.selectCount(queryWrapper)>=10){
+            map.put("error_message","Max bot number is 10");
             return map;
         }
 

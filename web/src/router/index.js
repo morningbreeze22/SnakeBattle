@@ -6,6 +6,7 @@ import RecordindexView from "@/views/record/RecordIndexView";
 import UserBotindexView from "@/views/user/bot/UserBotIndexView";
 import UserAccountLoginView from "@/views/user/account/UserAccountLoginView";
 import UserAccountRegisterView from "@/views/user/account/UserAccountRegisterView";
+import RecordContentView from "@/views/record/RecordContentView"
 import store from "@/store/index";
 
 const routes = [
@@ -45,6 +46,14 @@ const routes = [
     path:"/record/",
     name:"record_index",
     component: RecordindexView,
+    meta:{
+      requestAuth : true
+    }
+  },
+  {
+    path:"/record/:recordId",
+    name:"record_content",
+    component: RecordContentView,
     meta:{
       requestAuth : true
     }
