@@ -49,7 +49,7 @@ export default{
 
         const register = ()=>{
             $.ajax({
-                url:"http://localhost:3000/user/account/register/",
+                url:"https://app5070.acapp.acwing.com.cn/api/user/account/register/",
                 type:"post",
                 contentType: "application/json",
                 data:JSON.stringify({

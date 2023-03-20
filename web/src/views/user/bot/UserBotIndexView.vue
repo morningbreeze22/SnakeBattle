@@ -181,9 +181,7 @@ export default{
 
         let bots = ref("");
 
-        const botadd = reactive({
-            title:"",
-            description:`Welcome to snake battle!You can create a new snake bot by modifying code below. Here are some details that you need to know.
+        let default_description = `Welcome to snake battle!You can create a new snake bot by modifying code below. Here are some details that you need to know.
 Now we only support Java code. You only need to change code in nextMove() function. DO NOT change class name and package name.
 Input of this function is a string contains all the information about this game, assume you are player a and your opponent is b, format of this string is:
 
@@ -197,13 +195,17 @@ Output of this function is also an integer that decides which direction your sna
 
 We already provide some code to parse the input, so the easiest way to modify it is to change code between line 61-70.
 
-Good luck!`,
-            content:`package com.snakebattle.botrunningsystem.utils;
+Good luck!`
 
+        let default_code = `package com.snakebattle.botrunningsystem.utils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
-public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface {
+public class Bot implements java.util.function.Supplier<Integer>{
     static class Cell {
         public int x, y;
         public Cell(int x, int y) {  // define a cell with index
@@ -212,13 +214,13 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
         }
     }
 
-    private boolean check_tail_increasing(int step) { // rules for when the snake will become longer
+    private boolean check_tail_increasing(int step) {  // rules for when the snake will become longer
         if (step <= 10) return true;
         return step % 3 == 1;
     }
 
-    public List<Cell> getCells(int sx, int sy, String steps) { // compute snake cells
-        steps = steps.substring(1, steps.length() - 1); // get rid of brackets
+    public List<Cell> getCells(int sx, int sy, String steps) {  // compute snake cells
+        steps = steps.substring(1, steps.length() - 1);   // get rid of brackets
         List<Cell> res = new ArrayList<>();
 
         int[] dx = {-1, 0, 1, 0}, dy = {0, 1, 0, -1};
@@ -237,14 +239,13 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
         return res;
     }
 
-    @Override
-    public Integer nextMove(String input) {   
+    public Integer nextMove(String input) {
         String[] strs = input.split("#");
         int[][] g = new int[13][14];
         for (int i = 0, k = 0; i < 13; i ++ ) {
             for (int j = 0; j < 14; j ++, k ++ ) {
                 if (strs[0].charAt(k) == '1') {
-                    g[i][j] = 1;    // g is gamemap, 1 means wall
+                    g[i][j] = 1;       // g is gamemap, 1 means wall
                 }
             }
         }
@@ -254,7 +255,7 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
         // compute cells
         List<Cell> aCells = getCells(aSx, aSy, strs[3]);
         List<Cell> bCells = getCells(bSx, bSy, strs[6]);
-        
+
         for (Cell c: aCells) g[c.x][c.y] = 1;
         for (Cell c: bCells) g[c.x][c.y] = 1;
         // replace below code with your own algorithm!
@@ -269,8 +270,27 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
 
         return 0;
     }
+
+    @Override
+    public Integer get() {
+        File file = new File("input.txt");
+        try {
+            Scanner sc = new Scanner(file);
+            return nextMove(sc.next());
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
 }
-`,
+
+`
+
+        const botadd = reactive({
+            title:"",
+            description:default_description,
+            content:default_code,
             error_message:""
         });
 
@@ -285,7 +305,7 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
         // refresh page and fetch all bots from backend
         const refresh_bots = ()=>{
             $.ajax({
-            url:"http://localhost:3000/user/bot/getlist/",
+            url:"https://app5070.acapp.acwing.com.cn/api/user/bot/getlist/",
             type : "get",
             headers:{
                 Authorization : "Bearer "+ store.state.user.token
@@ -303,7 +323,7 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
         const add_bot = ()=>{
             botadd.error_message= "";
             $.ajax({
-                url:"http://localhost:3000/user/bot/add/",
+                url:"https://app5070.acapp.acwing.com.cn/api/user/bot/add/",
                 type:"post",
                 contentType: "application/json",
                 data:JSON.stringify({
@@ -317,8 +337,8 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
                 success(resp){
                     if(resp.error_message==="success"){
                         botadd.title="";
-                        botadd.description="";
-                        botadd.content="";
+                        botadd.description=default_description;
+                        botadd.content=default_code;
                         Modal.getInstance("#btn-add-bot").hide();
                         refresh_bots();
                     } else{
@@ -332,7 +352,7 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
         const update_bot = (bot)=>{
             botadd.error_message= "";
             $.ajax({
-                url:"http://localhost:3000/user/bot/update/",
+                url:"https://app5070.acapp.acwing.com.cn/api/user/bot/update/",
                 type:"post",
                 contentType: "application/json",
                 data:JSON.stringify({
@@ -362,7 +382,7 @@ public class Bot implements com.snakebattle.botrunningsystem.utils.BotInterface 
         const remove_bot = (bot)=>{
             if(confirm("Do you really want to delete this snake bot?")){
                 $.ajax({
-                url:"http://localhost:3000/user/bot/remove/",
+                url:"https://app5070.acapp.acwing.com.cn/api/user/bot/remove/",
                 type:"post",
                 contentType: "application/json",
                 data:JSON.stringify({

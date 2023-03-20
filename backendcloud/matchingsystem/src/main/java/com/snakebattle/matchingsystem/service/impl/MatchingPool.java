@@ -65,7 +65,7 @@ public class MatchingPool extends Thread{
             // if a user already waiting for too long and no other user is matching
             // we match this user with a bot
             if(a.getWaitingTime()>10 && players.size()==1){
-                System.out.println("add ai bot");
+                //System.out.println("add ai bot");
                 used[i]=true;
                 sendAiResult(a);
             }

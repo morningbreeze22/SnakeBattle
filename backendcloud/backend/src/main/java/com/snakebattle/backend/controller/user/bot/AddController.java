@@ -14,7 +14,7 @@ public class AddController{
     @Autowired
     private AddService addService;
 
-    @PostMapping("/user/bot/add")
+    @PostMapping("/api/user/bot/add")
     public Map<String,String> add(@RequestBody Map<String,String> map){
         return addService.add(map);
     }

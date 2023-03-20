@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class ReceivedBotMoveServiceImpl implements ReceiveBotMoveService {
     @Override
     public String ReceiveBotMove(Integer userId, Integer direction, Integer opponentId) {
-        System.out.println("received bot move" + userId + " " + direction);
+        //System.out.println("received bot move" + userId + " " + direction);
 
         // if ai bot, find game by its opponent's id
         if(userId.equals(6)){
@@ -29,7 +29,7 @@ public class ReceivedBotMoveServiceImpl implements ReceiveBotMoveService {
         if(WebSocketServer.users.get(userId)!=null){
             Game game = WebSocketServer.users.get(userId).game;
             if(game!=null){
-                System.out.println(game.getPlayerB().getId());
+                //System.out.println(game.getPlayerB().getId());
 
                 if(game.getPlayerA().getId().equals(userId)){
                     game.setNextStepA(direction); // move according to user input

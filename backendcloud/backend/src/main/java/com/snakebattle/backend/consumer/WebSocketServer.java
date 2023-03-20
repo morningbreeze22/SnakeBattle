@@ -67,7 +67,6 @@ public class WebSocketServer {
     @OnOpen
     public void onOpen(Session session, @PathParam("token") String token) throws IOException {
         this.session = session;
-        System.out.println("connected");
 
         // if assume token is user id
         Integer userId = JwtAuthentication.getUserId(token);
@@ -77,12 +76,12 @@ public class WebSocketServer {
         }else{
             this.session.close();
         }
-        System.out.println(users);
+        //System.out.println(users);
     }
 
     @OnClose
     public void onClose() {
-        System.out.println("disconnected");
+        //System.out.println("disconnected");
         if(this.user!=null){
             users.remove(this.user.getId());
             //matchpool.remove(this.user);
@@ -161,14 +160,14 @@ public class WebSocketServer {
                 game.setNextStepB(direction);
             }
         } else{
-            System.out.println("cannot move");
+            //System.out.println("cannot move");
         }
     }
 
     @OnMessage
     public void onMessage(String message, Session session) {
 
-        System.out.println("received");
+        //System.out.println("received");
         JSONObject data = JSONObject.parseObject(message);
         String event = data.getString("event");
         if("start-matching".equals(event)){
