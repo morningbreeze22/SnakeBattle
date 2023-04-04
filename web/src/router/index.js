@@ -90,15 +90,18 @@ const router = createRouter({
 })
 
 router.beforeEach((to,from,next)=>{
-
+  //localStorage.removeItem("jwt_token_sb");
   const jwt_token = localStorage.getItem("jwt_token_sb");
-
+ 
   if (jwt_token) {
     store.commit("updateToken", jwt_token);
+    
     store.dispatch("getinfo", {
       success() {
+       
       },
       error() {
+        
         router.push({ name: 'user_account_login' });
       }
     })

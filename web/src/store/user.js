@@ -50,6 +50,9 @@ export default ({
                 },
                 error(resp){
                   data.error(resp);
+                  localStorage.removeItem("jwt_token_sb");
+                    context.commit("logout");
+                    console.log("sth error!");
                 }
               });
         },
@@ -72,8 +75,18 @@ export default ({
                         data.error(resp);
                     }
                 },
+                statusCode:{
+                    500:function(){
+                        // if jwt expired, it will get 500
+                        localStorage.removeItem("jwt_token_sb");
+                        context.commit("logout");
+                    }
+                },
                 error(resp){
                   data.error(resp);
+                  // if other error, logout as well.
+                  localStorage.removeItem("jwt_token_sb");
+                  context.commit("logout");
                 }
               });
         },
